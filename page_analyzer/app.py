@@ -79,7 +79,7 @@ def get_urls():
         SELECT u.id, u.name, u.created_at, uc.status_code
         FROM urls u
         LEFT JOIN url_checks uc ON u.id = uc.url_id
-        WHERE uc.created_at = (SELECT MAX(created_at) FROM url_checks WHERE url_id = u.id)
+        AND uc.created_at = (SELECT MAX(created_at) FROM url_checks WHERE url_id = u.id)
         ORDER BY u.created_at DESC;
     """)
     urls = cur.fetchall()
@@ -126,7 +126,7 @@ def create_check(id):
         cur.close()
         conn.close()
 
-        response = requests.get(url, headers=HEADERS)
+        response = requests.get(url, headers=HEADERS, timeout=10)
         response.raise_for_status()
 
         soup = BeautifulSoup(response.text, "html.parser")
