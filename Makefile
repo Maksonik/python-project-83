@@ -4,9 +4,11 @@ install:
 dev:
 	poetry run flask --app page_analyzer:app run
 
+build:
+	./build.sh
 
 lint:
-	poetry run  black . &&  poetry run flake8 . && poetry run isort . --check --diff
+	poetry run black . && poetry run isort . && poetry run flake8 .
 
 
 PORT ?= 8000
