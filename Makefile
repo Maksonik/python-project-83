@@ -1,3 +1,5 @@
+PORT ?= 8000
+
 install:
 	poetry install
 
@@ -10,7 +12,5 @@ build:
 lint:
 	poetry run black . && poetry run isort . && poetry run flake8 .
 
-
-PORT ?= 8000
 start:
 	poetry run gunicorn -w 5 -b 0.0.0.0:$(PORT) page_analyzer:app
