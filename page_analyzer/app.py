@@ -7,7 +7,8 @@ import requests
 import validators
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from flask import Flask, flash, redirect, render_template, request, url_for, abort
+from flask import (Flask, abort, flash, redirect, render_template, request,
+                   url_for)
 from requests import RequestException
 
 load_dotenv()
@@ -17,8 +18,10 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 YaBrowser/24.10.0.0 Safari/537.36'
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) "
+                  "Chrome/128.0.0.0 YaBrowser/24.10.0.0 Safari/537.36"
 }
+
 
 @app.route("/")
 def main():
@@ -28,6 +31,7 @@ def main():
 @app.errorhandler(422)
 def handle_422_error(error):
     return render_template("index.html"), 422
+
 
 @app.post("/urls")
 def check_urls():
@@ -116,9 +120,7 @@ def create_check(id):
         url = url_item[0]
         cur.close()
         conn.close()
-        print(url)
         response = requests.get(url, headers=HEADERS)
-        print(response)
         response.raise_for_status()
 
         soup = BeautifulSoup(response.text, "html.parser")
