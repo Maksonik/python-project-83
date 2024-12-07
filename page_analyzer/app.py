@@ -13,13 +13,10 @@ from requests import RequestException
 
 
 app = Flask(__name__)
-
-if __name__ == "__main__":
-    dotenv.load_dotenv()
-
-    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
-    DATABASE_URL = os.getenv("DATABASE_URL")
-    app.run(debug=True)
+dotenv.load_dotenv()
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+DATABASE_URL = os.getenv("DATABASE_URL")
+app.run(debug=True)
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
