@@ -11,6 +11,7 @@ from flask import (Flask, abort, flash, redirect, render_template, request,
                    url_for)
 from requests import RequestException
 
+
 load_dotenv()
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
@@ -18,9 +19,11 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) "
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS "
+                  "X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/128.0.0.0 YaBrowser/24.10.0.0 Safari/537.36"
 }
+
 
 @app.route("/")
 def main():
@@ -119,7 +122,8 @@ def info_url(id):
     cur.close()
     conn.close()
 
-    return render_template("url_id.html", url_item=url_item, checks=checks)
+    return render_template("url_id.html",
+                           url_item=url_item, checks=checks)
 
 
 @app.route("/urls/<int:id>/checks", methods=["POST"])
@@ -140,7 +144,8 @@ def create_check(id):
 
         h1_tag = soup.find("h1")
         title_tag = soup.find("title")
-        meta_description_tag = soup.find("meta", attrs={"name": "description"})
+        meta_description_tag = soup.find("meta",
+                                         attrs={"name": "description"})
 
         h1_text = h1_tag.get_text() if h1_tag else None
         title_text = title_tag.get_text() if title_tag else None
