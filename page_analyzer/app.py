@@ -12,8 +12,8 @@ from flask import (Flask, abort, flash, redirect,
 from requests import RequestException
 
 
-app = Flask(__name__)
 load_dotenv()
+app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
 app.run(debug=True)
