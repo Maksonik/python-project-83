@@ -1,0 +1,14 @@
+install:
+	poetry install
+
+dev:
+	flask --app page_analyzer.app:app run
+
+
+lint:
+	poetry run  black . &&  poetry run flake8 . && poetry run isort . --check --diff
+
+
+PORT ?= 8000
+start:
+	poetry run gunicorn -w 5 -b 0.0.0.0:$(PORT) page_analyzer.app:app
