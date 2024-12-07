@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from urllib.parse import urlparse
 
 import psycopg2
@@ -68,15 +69,38 @@ def get_urls():
     return render_template("urls.html", urls=urls)
 
 
-@app.route("/urls/<id>")
+@app.route("/urls/<int:id>")
 def info_url(id):
     conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor()
-    cur.execute(f"Select id, name, created_at FROM urls where id = {id}")
 
+    cur.execute(f"SELECT id, name, created_at FROM urls WHERE id = %s;", (id,))
     url_item = cur.fetchone()
+
+    cur.execute("""
+        SELECT id, status_code, h1, title, description, created_at 
+        FROM url_checks 
+        WHERE url_id = %s
+        ORDER BY created_at DESC;
+    """, (id,))
+    checks = cur.fetchall()
+
     cur.close()
     conn.close()
-    return render_template(
-        "url_id.html", id=url_item[0], name=url_item[1], created_at=url_item[2]
+
+    return render_template("url_id.html", url_item=url_item, checks=checks)
+
+@app.route("/urls/<int:id>/checks", methods=["POST"])
+def create_check(id):
+    conn = psycopg2.connect(DATABASE_URL)
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO url_checks (url_id, created_at) VALUES (%s, %s) RETURNING url_id;",
+        (id, datetime.now())
     )
+    check_item = cur.fetchone()
+    conn.commit()
+    flash(f"Страница успешно проверена")
+    cur.close()
+    conn.close()
+    return redirect(url_for('info_url', id=check_item[0]))
