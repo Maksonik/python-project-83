@@ -118,7 +118,6 @@ def info_url(id):
 @app.route("/urls/<int:id>/checks", methods=["POST"])
 def create_check(id):
     try:
-        # Получаем URL из базы данных
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
         cur.execute("SELECT name FROM urls WHERE id = %s;", (id,))
@@ -126,28 +125,22 @@ def create_check(id):
         url = url_item[0]
         cur.close()
         conn.close()
-        print(url)
-        if "stub.com" in url:
-            status_code = ("200",)
-            title_text = ("Awesome page",)
-            h1_text = ("Do not expect a miracle, miracles yourself!",)
-            meta_description_text = "Statements of great people"
-        else:
-            response = requests.get(url, headers=HEADERS)
-            response.raise_for_status()
 
-            soup = BeautifulSoup(response.text, "html.parser")
+        response = requests.get(url, headers=HEADERS)
+        response.raise_for_status()
 
-            h1_tag = soup.find("h1")
-            title_tag = soup.find("title")
-            meta_description_tag = soup.find("meta", attrs={"name": "description"})
+        soup = BeautifulSoup(response.text, "html.parser")
 
-            h1_text = h1_tag.get_text() if h1_tag else None
-            title_text = title_tag.get_text() if title_tag else None
-            meta_description_text = (
-                meta_description_tag["content"] if meta_description_tag else None
-            )
-            status_code = response.status_code
+        h1_tag = soup.find("h1")
+        title_tag = soup.find("title")
+        meta_description_tag = soup.find("meta", attrs={"name": "description"})
+
+        h1_text = h1_tag.get_text() if h1_tag else None
+        title_text = title_tag.get_text() if title_tag else None
+        meta_description_text = (
+            meta_description_tag["content"] if meta_description_tag else None
+        )
+        status_code = response.status_code
 
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
@@ -170,7 +163,6 @@ def create_check(id):
 
         flash("Страница успешно проверена", "success")
     except RequestException as e:
-        print(e)
         flash("Произошла ошибка при проверке", "danger")
 
     return redirect(url_for("info_url", id=id))
