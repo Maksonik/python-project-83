@@ -2,17 +2,17 @@ import os
 from datetime import datetime
 from urllib.parse import urlparse
 
+import dotenv
 import psycopg2
 import requests
 import validators
 from bs4 import BeautifulSoup
-from dotenv import load_dotenv
 from flask import (Flask, abort, flash, redirect,
                    render_template, request, url_for)
 from requests import RequestException
 
 
-evn = load_dotenv()
+dotenv.load_dotenv()
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
