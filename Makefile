@@ -2,7 +2,7 @@ install:
 	poetry install
 
 dev:
-	flask --app page_analyzer.app:app run
+	poetry run flask --app page_analyzer.app:app run
 
 
 lint:
