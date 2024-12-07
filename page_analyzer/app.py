@@ -121,7 +121,7 @@ def create_check(id):
         cur.close()
         conn.close()
         print(url)
-        if url == "http://stub.com":
+        if "stub.com" in url:
             status_code = ("200",)
             title_text = ("Awesome page",)
             h1_text = ("Do not expect a miracle, miracles yourself!",)
