@@ -1,11 +1,11 @@
 import os
 from datetime import datetime
-from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 
 import psycopg2
 import requests
 import validators
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, url_for
 from requests import RequestException
@@ -33,7 +33,7 @@ def check_urls():
 
     # Проверка валидности URL
     if not validators.url(normalized_url):
-        flash("Некорректный URL-адрес","danger")
+        flash("Некорректный URL-адрес", "danger")
         return redirect(url_for("main"))
 
     try:
@@ -77,21 +77,25 @@ def info_url(id):
     conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor()
 
-    cur.execute(f"SELECT id, name, created_at FROM urls WHERE id = %s;", (id,))
+    cur.execute("SELECT id, name, created_at FROM urls WHERE id = %s;", (id,))
     url_item = cur.fetchone()
 
-    cur.execute("""
-        SELECT id, status_code, h1, title, description, created_at 
-        FROM url_checks 
+    cur.execute(
+        """
+        SELECT id, status_code, h1, title, description, created_at
+        FROM url_checks
         WHERE url_id = %s
         ORDER BY created_at DESC;
-    """, (id,))
+        """,
+        (id,),
+    )
     checks = cur.fetchall()
 
     cur.close()
     conn.close()
 
     return render_template("url_id.html", url_item=url_item, checks=checks)
+
 
 @app.route("/urls/<int:id>/checks", methods=["POST"])
 def create_check(id):
@@ -108,29 +112,39 @@ def create_check(id):
         response = requests.get(url)
         response.raise_for_status()
 
-        soup = BeautifulSoup(response.text, 'html.parser')
+        soup = BeautifulSoup(response.text, "html.parser")
 
-        h1_tag = soup.find('h1')
-        title_tag = soup.find('title')
-        meta_description_tag = soup.find('meta', attrs={'name': 'description'})
+        h1_tag = soup.find("h1")
+        title_tag = soup.find("title")
+        meta_description_tag = soup.find("meta", attrs={"name": "description"})
 
         h1_text = h1_tag.get_text() if h1_tag else None
         title_text = title_tag.get_text() if title_tag else None
-        meta_description_text = meta_description_tag['content'] if meta_description_tag else None
+        meta_description_text = (
+            meta_description_tag["content"] if meta_description_tag else None
+        )
 
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO url_checks (url_id, status_code, created_at, h1, title, description) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
-            (id, response.status_code, datetime.now(), h1_text, title_text, meta_description_text)
+            "INSERT INTO url_checks (url_id, status_code, created_at, h1, title, description)"
+            " VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
+            (
+                id,
+                response.status_code,
+                datetime.now(),
+                h1_text,
+                title_text,
+                meta_description_text,
+            ),
         )
-        check_item = cur.fetchone()
+        cur.fetchone()
         conn.commit()
         cur.close()
         conn.close()
 
         flash("Страница успешно проверена", "success")
-    except RequestException as e:
+    except RequestException:
         flash("Произошла ошибка при проверке", "danger")
 
-    return redirect(url_for('info_url', id=id))
+    return redirect(url_for("info_url", id=id))
