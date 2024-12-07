@@ -16,6 +16,10 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 YaBrowser/24.10.0.0 Safari/537.36'
+}
+
 @app.route("/")
 def main():
     return render_template("index.html")
@@ -112,8 +116,9 @@ def create_check(id):
         url = url_item[0]
         cur.close()
         conn.close()
-
-        response = requests.get(url)
+        print(url)
+        response = requests.get(url, headers=HEADERS)
+        print(response)
         response.raise_for_status()
 
         soup = BeautifulSoup(response.text, "html.parser")
@@ -148,7 +153,8 @@ def create_check(id):
         conn.close()
 
         flash("Страница успешно проверена", "success")
-    except RequestException:
+    except RequestException as e:
+        print(e)
         flash("Произошла ошибка при проверке", "danger")
 
     return redirect(url_for("info_url", id=id))
