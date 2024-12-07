@@ -18,7 +18,8 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) "
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+                  " AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/128.0.0.0 YaBrowser/24.10.0.0 Safari/537.36"
 }
 
@@ -39,7 +40,8 @@ def check_urls():
     normalized_url = f"{url.scheme}://{url.hostname}"
 
     if len(normalized_url) > 255:
-        flash("URL слишком длинный (максимум 255 символов)", "danger")
+        flash("URL слишком длинный "
+              "(максимум 255 символов)", "danger")
         abort(422)
 
     if not validators.url(normalized_url):
@@ -50,18 +52,21 @@ def check_urls():
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO urls (name) VALUES (%s) RETURNING id;", (normalized_url,)
+            "INSERT INTO urls (name)"
+            " VALUES (%s) RETURNING id;", (normalized_url,)
         )
         url_item = cur.fetchone()
         conn.commit()
         cur.close()
         conn.close()
-        flash("Страница успешно добавлена", "info")
+        flash("Страница успешно добавлена",
+              "info")
     except Exception:
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
         cur.execute(
-            "SELECT id, name, created_at FROM urls WHERE name = %s", (normalized_url,)
+            "SELECT id, name, created_at"
+            " FROM urls WHERE name = %s", (normalized_url,)
         )
         url_item = cur.fetchone()
         cur.close()
@@ -80,7 +85,8 @@ def get_urls():
         SELECT u.id, u.name, u.created_at, uc.status_code
         FROM urls u
         LEFT JOIN url_checks uc ON u.id = uc.url_id
-        AND uc.created_at = (SELECT MAX(created_at) FROM url_checks WHERE url_id = u.id)
+        AND uc.created_at = (SELECT MAX(created_at)
+         FROM url_checks WHERE url_id = u.id)
         ORDER BY u.created_at DESC;
     """
     )
@@ -97,12 +103,14 @@ def info_url(id):
     conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor()
 
-    cur.execute("SELECT id, name, created_at FROM urls WHERE id = %s;", (id,))
+    cur.execute("SELECT id, name, created_at"
+                " FROM urls WHERE id = %s;", (id,))
     url_item = cur.fetchone()
 
     cur.execute(
         """
-        SELECT id, status_code, h1, title, description, created_at
+        SELECT id, status_code, h1,
+         title, description, created_at
         FROM url_checks
         WHERE url_id = %s
         ORDER BY created_at DESC;
@@ -114,7 +122,8 @@ def info_url(id):
     cur.close()
     conn.close()
 
-    return render_template("url_id.html", url_item=url_item, checks=checks)
+    return render_template("url_id.html",
+                           url_item=url_item, checks=checks)
 
 
 @app.route("/urls/<int:id>/checks", methods=["POST"])
@@ -135,7 +144,8 @@ def create_check(id):
 
         h1_tag = soup.find("h1")
         title_tag = soup.find("title")
-        meta_description_tag = soup.find("meta", attrs={"name": "description"})
+        meta_description_tag = soup.find("meta",
+                                         attrs={"name": "description"})
 
         h1_text = h1_tag.get_text() if h1_tag else None
         title_text = title_tag.get_text() if title_tag else None
@@ -147,7 +157,8 @@ def create_check(id):
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO url_checks (url_id, status_code, created_at, h1, title, description)"
+            "INSERT INTO url_checks (url_id, "
+            "status_code, created_at, h1, title, description)"
             " VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
             (
                 id,
@@ -163,8 +174,10 @@ def create_check(id):
         cur.close()
         conn.close()
 
-        flash("Страница успешно проверена", "success")
+        flash("Страница успешно проверена",
+              "success")
     except RequestException:
-        flash("Произошла ошибка при проверке", "danger")
+        flash("Произошла ошибка при проверке",
+              "danger")
 
     return redirect(url_for("info_url", id=id))
