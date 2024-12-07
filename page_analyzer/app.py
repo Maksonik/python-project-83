@@ -7,7 +7,7 @@ import requests
 import validators
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from flask import Flask, flash, redirect, render_template, request, url_for
+from flask import Flask, flash, redirect, render_template, request, url_for, abort
 from requests import RequestException
 
 load_dotenv()
@@ -21,20 +21,22 @@ def main():
     return render_template("index.html")
 
 
+@app.errorhandler(422)
+def handle_422_error(error):
+    return render_template("index.html"), 422
+
 @app.post("/urls")
 def check_urls():
     url = urlparse(request.form["url"])
     normalized_url = f"{url.scheme}://{url.hostname}"
 
-    # Проверка длины URL
     if len(normalized_url) > 255:
         flash("URL слишком длинный (максимум 255 символов)", "danger")
-        return redirect(url_for("main"))
+        abort(422)
 
-    # Проверка валидности URL
     if not validators.url(normalized_url):
         flash("Некорректный URL-адрес", "danger")
-        return redirect(url_for("main"))
+        abort(422)
 
     try:
         conn = psycopg2.connect(DATABASE_URL)
@@ -46,6 +48,7 @@ def check_urls():
         conn.commit()
         cur.close()
         conn.close()
+        flash("Страница успешно добавлена", "info")
     except Exception:
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
