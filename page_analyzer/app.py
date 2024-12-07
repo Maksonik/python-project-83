@@ -3,9 +3,11 @@ from datetime import datetime
 from urllib.parse import urlparse
 
 import psycopg2
+import requests
 import validators
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, url_for
+from requests import RequestException
 
 load_dotenv()
 app = Flask(__name__)
@@ -25,12 +27,12 @@ def check_urls():
 
     # Проверка длины URL
     if len(normalized_url) > 255:
-        flash("URL слишком длинный (максимум 255 символов)")
+        flash("URL слишком длинный (максимум 255 символов)", "danger")
         return redirect(url_for("main"))
 
     # Проверка валидности URL
     if not validators.url(normalized_url):
-        flash("Некорректный URL-адрес")
+        flash("Некорректный URL-адрес","danger")
         return redirect(url_for("main"))
 
     try:
@@ -92,15 +94,31 @@ def info_url(id):
 
 @app.route("/urls/<int:id>/checks", methods=["POST"])
 def create_check(id):
-    conn = psycopg2.connect(DATABASE_URL)
-    cur = conn.cursor()
-    cur.execute(
-        "INSERT INTO url_checks (url_id, created_at) VALUES (%s, %s) RETURNING url_id;",
-        (id, datetime.now())
-    )
-    check_item = cur.fetchone()
-    conn.commit()
-    flash(f"Страница успешно проверена")
-    cur.close()
-    conn.close()
-    return redirect(url_for('info_url', id=check_item[0]))
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cur.execute("SELECT name FROM urls WHERE id = %s;", (id,))
+        url_item = cur.fetchone()
+        url = url_item[0]
+        cur.close()
+        conn.close()
+
+        response = requests.get(url)
+        response.raise_for_status()
+
+        conn = psycopg2.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO url_checks (url_id, status_code, created_at) VALUES (%s, %s, %s) RETURNING id;",
+            (id, response.status_code, datetime.now())
+        )
+        check_item = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        flash(f"Страница успешно проверена", "success")
+    except RequestException as e:
+        flash("Произошла ошибка при проверке", "danger")
+
+    return redirect(url_for('info_url', id=id))
