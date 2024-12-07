@@ -7,9 +7,13 @@ import requests
 import validators
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from flask import (Flask, abort, flash,
-                   redirect, render_template, request, url_for)
+from flask import Flask, abort, flash, redirect, render_template, request, url_for
 from requests import RequestException
+
+load_dotenv()
+app = Flask(__name__)
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 load_dotenv()
 app = Flask(__name__)
