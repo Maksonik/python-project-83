@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 
 import psycopg2
@@ -95,6 +96,7 @@ def info_url(id):
 @app.route("/urls/<int:id>/checks", methods=["POST"])
 def create_check(id):
     try:
+        # Получаем URL из базы данных
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
         cur.execute("SELECT name FROM urls WHERE id = %s;", (id,))
@@ -106,18 +108,28 @@ def create_check(id):
         response = requests.get(url)
         response.raise_for_status()
 
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        h1_tag = soup.find('h1')
+        title_tag = soup.find('title')
+        meta_description_tag = soup.find('meta', attrs={'name': 'description'})
+
+        h1_text = h1_tag.get_text() if h1_tag else None
+        title_text = title_tag.get_text() if title_tag else None
+        meta_description_text = meta_description_tag['content'] if meta_description_tag else None
+
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO url_checks (url_id, status_code, created_at) VALUES (%s, %s, %s) RETURNING id;",
-            (id, response.status_code, datetime.now())
+            "INSERT INTO url_checks (url_id, status_code, created_at, h1, title, description) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
+            (id, response.status_code, datetime.now(), h1_text, title_text, meta_description_text)
         )
         check_item = cur.fetchone()
         conn.commit()
         cur.close()
         conn.close()
 
-        flash(f"Страница успешно проверена", "success")
+        flash("Страница успешно проверена", "success")
     except RequestException as e:
         flash("Произошла ошибка при проверке", "danger")
 
