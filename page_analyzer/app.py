@@ -75,13 +75,15 @@ def get_urls():
     conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor()
 
-    cur.execute("""
+    cur.execute(
+        """
         SELECT u.id, u.name, u.created_at, uc.status_code
         FROM urls u
         LEFT JOIN url_checks uc ON u.id = uc.url_id
         AND uc.created_at = (SELECT MAX(created_at) FROM url_checks WHERE url_id = u.id)
         ORDER BY u.created_at DESC;
-    """)
+    """
+    )
     urls = cur.fetchall()
 
     cur.close()
@@ -162,7 +164,7 @@ def create_check(id):
         conn.close()
 
         flash("Страница успешно проверена", "success")
-    except RequestException as e:
+    except RequestException:
         flash("Произошла ошибка при проверке", "danger")
 
     return redirect(url_for("info_url", id=id))
