@@ -7,23 +7,20 @@ import requests
 import validators
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from flask import (Flask, abort, flash, redirect,
-                   render_template, request, url_for)
+from flask import (Flask, abort, flash, redirect, render_template, request,
+                   url_for)
 from requests import RequestException
-
 
 load_dotenv()
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
-app.run(debug=True)
+
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
-    " AppleWebKit/537.36 (KHTML, like Gecko) "
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/128.0.0.0 YaBrowser/24.10.0.0 Safari/537.36"
 }
-
 
 @app.route("/")
 def main():
