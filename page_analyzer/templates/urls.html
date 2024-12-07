@@ -32,32 +32,32 @@
 
   <main class="flex-grow-1">
     <div class="container-lg mt-3">
-      <h1>Сайты</h1>
+        <h1>Сайты</h1>
 
-      <div class="table-responsive">
-        <table class="table table-bordered table-hover text-nowrap" data-test="urls">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Имя</th>
-              <th>Последняя проверка</th>
-              <th>Код ответа</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for url in urls %}
-              <tr>
-                <td>{{ url[0] }}</td>
-                <td><a href="/urls/{{ url[0] }}">{{ url[1] }}</a></td>
-                <td>{{ url[2] }}</td>
-                <td></td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover text-nowrap" data-test="urls">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Имя</th>
+                        <th>Последняя проверка</th>
+                        <th>Код ответа</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for url in urls %}
+                    <tr>
+                        <td>{{ url[0] }}</td>
+                        <td><a href="/urls/{{ url[0] }}">{{ url[1] }}</a></td>
+                        <td>{{ url[2] }}</td>
+                        <td>{{ url[3] if url[3] is not none else 'Не проверено' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-  </main>
+</main>
 
   <footer class="border-top py-3 mt-5 flex-shrink-0">
     <div class="container-lg">

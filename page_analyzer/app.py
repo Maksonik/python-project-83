@@ -75,7 +75,13 @@ def get_urls():
     conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor()
 
-    cur.execute("SELECT id, name, created_at FROM urls ORDER BY created_at DESC;")
+    cur.execute("""
+        SELECT u.id, u.name, u.created_at, uc.status_code
+        FROM urls u
+        LEFT JOIN url_checks uc ON u.id = uc.url_id
+        WHERE uc.created_at = (SELECT MAX(created_at) FROM url_checks WHERE url_id = u.id)
+        ORDER BY u.created_at DESC;
+    """)
     urls = cur.fetchall()
 
     cur.close()
