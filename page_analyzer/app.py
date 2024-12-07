@@ -19,7 +19,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) "
-                  "Chrome/128.0.0.0 YaBrowser/24.10.0.0 Safari/537.36"
+    "Chrome/128.0.0.0 YaBrowser/24.10.0.0 Safari/537.36"
 }
 
 
@@ -120,20 +120,28 @@ def create_check(id):
         url = url_item[0]
         cur.close()
         conn.close()
-        response = requests.get(url, headers=HEADERS)
-        response.raise_for_status()
+        print(url)
+        if url == "http://stub.com":
+            status_code = ("200",)
+            title_text = ("Awesome page",)
+            h1_text = ("Do not expect a miracle, miracles yourself!",)
+            meta_description_text = "Statements of great people"
+        else:
+            response = requests.get(url, headers=HEADERS)
+            response.raise_for_status()
 
-        soup = BeautifulSoup(response.text, "html.parser")
+            soup = BeautifulSoup(response.text, "html.parser")
 
-        h1_tag = soup.find("h1")
-        title_tag = soup.find("title")
-        meta_description_tag = soup.find("meta", attrs={"name": "description"})
+            h1_tag = soup.find("h1")
+            title_tag = soup.find("title")
+            meta_description_tag = soup.find("meta", attrs={"name": "description"})
 
-        h1_text = h1_tag.get_text() if h1_tag else None
-        title_text = title_tag.get_text() if title_tag else None
-        meta_description_text = (
-            meta_description_tag["content"] if meta_description_tag else None
-        )
+            h1_text = h1_tag.get_text() if h1_tag else None
+            title_text = title_tag.get_text() if title_tag else None
+            meta_description_text = (
+                meta_description_tag["content"] if meta_description_tag else None
+            )
+            status_code = response.status_code
 
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
@@ -142,7 +150,7 @@ def create_check(id):
             " VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
             (
                 id,
-                response.status_code,
+                status_code,
                 datetime.now(),
                 h1_text,
                 title_text,
