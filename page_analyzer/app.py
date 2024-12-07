@@ -58,6 +58,7 @@ def check_urls():
         url_item = cur.fetchone()
         cur.close()
         conn.close()
+        flash("Страница уже существует", "info")
     return redirect(url_for("info_url", id=url_item[0]))
 
 
