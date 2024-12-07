@@ -5,6 +5,9 @@ description = ""
 authors = ["Sustavov Maksim <maksim.sustavov@edgecenter.ru>"]
 readme = "README.md"
 
+[tool.poetry.packages]
+packages = [{include = "page_analyzer"}]
+
 [tool.poetry.dependencies]
 python = "^3.11"
 flask = "^3.1.0"
