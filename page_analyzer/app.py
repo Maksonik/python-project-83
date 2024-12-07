@@ -43,7 +43,8 @@ def check_urls():
     normalized_url = f"{url.scheme}://{url.hostname}"
 
     if len(normalized_url) > 255:
-        flash("URL слишком длинный " "(максимум 255 символов)", "danger")
+        flash("URL слишком длинный " "(максимум 255 символов)",
+              "danger")
         abort(422)
 
     if not validators.url(normalized_url):
@@ -54,7 +55,8 @@ def check_urls():
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO urls (name)" " VALUES (%s) RETURNING id;", (normalized_url,)
+            "INSERT INTO urls (name)" " VALUES (%s) RETURNING id;",
+            (normalized_url,)
         )
         url_item = cur.fetchone()
         conn.commit()
@@ -103,7 +105,8 @@ def info_url(id):
     conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor()
 
-    cur.execute("SELECT id, name, created_at" " FROM urls WHERE id = %s;", (id,))
+    cur.execute("SELECT id, name, created_at" " FROM urls WHERE id = %s;",
+                (id,))
     url_item = cur.fetchone()
 
     cur.execute(
